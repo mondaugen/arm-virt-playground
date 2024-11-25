@@ -31,9 +31,21 @@ _start.zero_bss:
     bic r2, r2
 _start.zero_bss_loop:
     cmp r0, r1
-    beq _start.jump_main
+    beq _start.zero_bss_end
     str r2, [r0]
     add r0, #4
     b _start.zero_bss_loop
+_start.zero_bss_end:
+#ifdef SIMULATE_FAULT_SVC
+_start.simulate_fault_svc:
+    svc #123
+#endif
+#ifdef SIMULATE_FAULT_DIV_0
+_start.simulate_fault_div_0:
+    ldr r1, =0xe000ed14 /* CCR register */
+    ldr r3, =0x00000010 /* enable DIV_0_TRP */
+    str r3, [r1]
+    sdiv r0, r2
+#endif
 _start.jump_main:
     b main
